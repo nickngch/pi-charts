@@ -6,13 +6,13 @@ from unwanted content without installing any client-side software.
 ## TL;DR
 
 ```console
-$ helm repo add savepointsam https://savepointsam.github.io/charts
-$ helm install my-release savepointsam/pihole
+$ helm repo add nickngch https://nickngch.github.io/pi-charts
+$ helm install my-release nickngch/pihole
 ```
 
 ## Introduction
 
-This chart bootstraps a [Pi-hole](https://github.com/NLnetLabs/unbound)
+This chart bootstraps a [Pi-hole](https://github.com/pi-hole/pi-hole)
 deployment on a [Kubernetes](https://kubernetes.io) cluster using the
 [Helm](https://helm.sh) package manager.
 
@@ -26,10 +26,10 @@ deployment on a [Kubernetes](https://kubernetes.io) cluster using the
 To install the chart with the release name `my-release`:
 
 ```console
-helm install my-release savepointsam/pihole
+helm install my-release nickngch/pihole
 ```
 
-The command deploys unbound on the Kubernetes cluster in the default
+The command deploys Pi-hole on the Kubernetes cluster in the default
 configuration. The [Parameters](#parameters) section lists the parameters that
 can be configured during installation.
 
@@ -83,7 +83,7 @@ deletes the release.
 | `pihole.dnssec.enabled`                 | Enable DNSSEC                                                                                 | `false`                 |
 | `pihole.privateRangeForwarding.enabled` | Enable forwarding of reverse lookup for private ranges                                        | `false`                 |
 | `pihole.requireFqdn`                    | Only forward Full Qualified Domain Names                                                      | `true`                  |
-| `pihole.virtualHost`                    | Hostname/IP for admin web UI access in addition to default "pi.hole/admin"                    | `""`                    |
+| `pihole.virtualHost`                    | Hostname/IP for admin web UI access in addition to default "pi.hole/admin"                    | `pi.hole`               |
 | `pihole.ipv6Support`                    | Retain/Remove IPv6 configuration                                                              | `true`                  |
 | `pihole.temperatureUnit`                | Preferred temperature unit ("c", "f", or "k")                                                 | `f`                     |
 | `pihole.reverseServer.enabled`          | Enable rev-server                                                                             | `false`                 |
@@ -129,11 +129,12 @@ deletes the release.
 | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | --------------- |
 | `pihole.image.registry`                                  | Pi-hole image registry                                                                                                   | `docker.io`     |
 | `pihole.image.repository`                                | Pi-hole image repository                                                                                                 | `pihole/pihole` |
-| `pihole.image.tag`                                       | Pi-hole image tag (immutable tags are recommended)                                                                       | `2022.05`       |
+| `pihole.image.tag`                                       | Pi-hole image tag (immutable tags are recommended)                                                                       | `2023.05.0`     |
 | `pihole.image.pullPolicy`                                | Pi-hole image pull policy                                                                                                | `IfNotPresent`  |
 | `pihole.image.pullSecrets`                               | Pi-hole image pull secrets                                                                                               | `[]`            |
 | `pihole.image.debug`                                     | Enable Pi-hole image debug mode                                                                                          | `false`         |
 | `pihole.replicaCount`                                    | Number of Pi-hole replicas to deploy                                                                                     | `1`             |
+| `pihole.hostNetwork`                                     | Enable host network mode for Pi-hole pods                                                                                | `false`         |
 | `pihole.containerPorts.dns`                              | Pi-hole DNS container port                                                                                               | `53`            |
 | `pihole.containerPorts.http`                             | Pi-hole HTTP container port                                                                                              | `80`            |
 | `pihole.containerPorts.dhcp`                             | Pi-hole DHCP container port                                                                                              | `67`            |
@@ -226,6 +227,17 @@ deletes the release.
 | `service.sessionAffinityConfig`    | Additional settings for the sessionAffinity                                        | `{}`        |
 
 
+### Ingress parameters
+
+| Name                   | Description                              | Value                        |
+| ---------------------- | ---------------------------------------- | ---------------------------- |
+| `ingress.enabled`      | Enable Ingress                           | `false`                      |
+| `ingress.className`    | Ingress Class Name                       | `""`                         |
+| `ingress.annotations`  | Ingress annotations                      | `{}`                         |
+| `ingress.hosts`        | Ingress hosts configuration              | `[{host: pihole.local, ...}]`|
+| `ingress.tls`          | Ingress TLS configuration                | `[]`                         |
+
+
 ### Persistence parameters
 
 | Name                        | Description                                                                                             | Value               |
@@ -259,7 +271,7 @@ Specify each parameter using the `--set key=value[,key=value]` argument to
 helm install my-release \
   --set pihole.webui.admin.email="myemail@provider.com" \
   --set pihole.dnssec.enabled=true \
-  savepointsam/pihole
+  nickngch/pihole
 ```
 
 The above command sets the Pi-hole web UI admin email as `myemail@provider.com`

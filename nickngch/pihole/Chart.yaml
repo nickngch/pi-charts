@@ -1,6 +1,6 @@
 apiVersion: v2
 name: pihole
-version: 0.2.0
+version: 0.3.0
 description: A Helm chart to deploy pi-hole on Kubernetes
 type: application
 keywords:
@@ -11,7 +11,7 @@ keywords:
   - adblock
 home: https://pi-hole.net/
 sources:
-  - https://github.com/SavePointSam/charts/savepointsam/pihole
+  - https://github.com/nickngch/pi-charts
   - https://github.com/pi-hole
   - https://github.com/pi-hole/docker-pi-hole
 dependencies:
@@ -19,8 +19,7 @@ dependencies:
     version: 1.x.x
     repository: https://charts.bitnami.com/bitnami
 maintainers:
-  - name: Sam Horton
-    email: savepointsam@gmail.com
-    url: https://github.com/SavePointSam
+  - name: nickngch
+    url: https://github.com/nickngch
 icon: https://upload.wikimedia.org/wikipedia/commons/0/00/Pi-hole_Logo.png
 appVersion: "2023.05.0"
