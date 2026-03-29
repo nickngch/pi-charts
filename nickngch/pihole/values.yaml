@@ -41,7 +41,16 @@ commonAnnotations: {}
 clusterDomain: cluster.local
 ## @param extraDeploy Array of extra objects to deploy with the release
 ##
-extraDeploy: []
+extraDeploy:
+  - |
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: pihole-custom-dns
+      namespace: {{ .Release.Namespace }}
+    data:
+      99-custom.conf: |
+        host-record=pi.hole,192.168.50.100,192.168.50.101
 
 ## Enable diagnostic mode in the deployment
 ##
@@ -96,7 +105,7 @@ pihole:
   privateRangeForwarding:
     enabled: false
   requireFqdn: true
-  virtualHost: ""
+  virtualHost: "pi.hole"
   ipv6Support: true
   temperatureUnit: "f"
   ## Enables viewing local hostnames instead of IP addresses in Pi-hole web UI
@@ -178,7 +187,8 @@ pihole:
     ##  ftlConf:
     ##    BLOCK_ICLOUD_PR: false
     ##
-    ftlConf: {}
+    ftlConf:
+      LOCAL_IPV4: "192.168.50.100"
 
   ## @section Pi-hole experimental parameters
 
@@ -233,6 +243,9 @@ pihole:
   ## @param pihole.replicaCount Number of Pi-hole replicas to deploy
   ##
   replicaCount: 1
+  ## @param pihole.hostNetwork Enable host network
+  ##
+  hostNetwork: false
   ## Pi-hole container ports
   ## ref: https://docs.pi-hole.net/main/prerequisites/#ports
   ## @param pihole.containerPorts.dns Pi-hole DNS container port
@@ -320,6 +333,10 @@ pihole:
   podSecurityContext:
     enabled: false
     fsGroup: 1001
+    runAsUser: 1001
+    runAsGroup: 1001
+    seccompProfile:
+      type: RuntimeDefault
   ## Configure Container Security Context
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
   ## @param pihole.containerSecurityContext.enabled Enabled Pi-hole containers' Security Context
@@ -332,6 +349,14 @@ pihole:
     runAsUser: 1001
     runAsNonRoot: true
     readOnlyRootFilesystem: false
+    allowPrivilegeEscalation: false
+    capabilities:
+      add:
+        - NET_BIND_SERVICE
+      drop:
+        - ALL
+    seccompProfile:
+      type: RuntimeDefault
 
   ## @param pihole.existingConfigmap The name of an existing ConfigMap with your custom configuration for pi-hole
   ##
@@ -464,10 +489,16 @@ pihole:
   extraEnvVarsSecret: ""
   ## @param pihole.extraVolumes Optionally specify extra list of additional volumes for then Pi-hole pod(s)
   ##
-  extraVolumes: []
+  extraVolumes:
+    - name: custom-dns-config
+      configMap:
+        name: pihole-custom-dns
   ## @param pihole.extraVolumeMounts Optionally specify extra list of additional volumeMounts for then Pi-hole container(s)
   ##
-  extraVolumeMounts: []
+  extraVolumeMounts:
+    - name: custom-dns-config
+      mountPath: /etc/dnsmasq.d/99-custom.conf
+      subPath: 99-custom.conf
   ## @param pihole.sidecars Add additional sidecar containers to then Pi-hole pod(s)
   ## e.g:
   ## sidecars:
@@ -556,6 +587,34 @@ service:
   ##     timeoutSeconds: 300
   ##
   sessionAffinityConfig: {}
+
+## @section Ingress parameters
+
+## Ingress configuration
+##
+ingress:
+  ## @param ingress.enabled Enable Ingress
+  ##
+  enabled: false
+  ## @param ingress.className Ingress Class Name
+  ##
+  className: ""
+  ## @param ingress.annotations Ingress annotations
+  ##
+  annotations: {}
+  ## @param ingress.hosts Ingress hosts
+  ##
+  hosts:
+    - host: pihole.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  ## @param ingress.tls Ingress TLS configuration
+  ##
+  tls: []
+  #  - secretName: pihole-tls
+  #    hosts:
+  #      - pihole.local
 
 ## @section Persistence parameters
 
